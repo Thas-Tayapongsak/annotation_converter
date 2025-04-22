@@ -5,10 +5,9 @@ from converter_utils import (
     copy_images, 
     write_yolo_yaml, 
     initialize_yolo_labels,
-    process_coco,
     validate_options,
-    process_bin,
 )
+from converter_from import *
 
 # TODO: ***VERY IMPORTANT***
 #       REFACTOR SOME MORE AND CLEAN UP THE CODE
@@ -18,59 +17,6 @@ from converter_utils import (
 #       WRITE EXCEPTION ONLY FOR USER'S ERROR
 #       WRITE COMMENTS AND DOCSTRING
 #       WRITE TEST
-
-def from_bin(opt, verbose=True):
-
-    src_path = opt.get('src_path')
-    dst_path = opt.get('dst_path')
-
-    # find images and masks directory
-    images_path = src_path / 'images'
-    masks_path = src_path / 'masks'
-    if not images_path.is_dir():
-        raise FileNotFoundError(f"No images directory found in {src_path}")
-    if not masks_path.is_dir():
-        raise FileNotFoundError(f"No masks directory found in {src_path}")
-
-    # check if images are split into train, validation, and test sets, and create directory structure
-    splits = []
-    for split in images_path.iterdir(): 
-        key, images, categories, annotations = process_bin(dst_path, images_path, masks_path, split, verbose)
-        splits.append({key: {'images': images, 'categories': categories, 'annotations': annotations}})
-        if not split.is_dir():
-            break
-
-    coco_dict = {
-        'options': opt,
-        'splits': splits
-    }
-
-    return coco_dict
-
-def from_coco(opt, verbose=True):
-    src_path = opt.get('src_path')
-    dst_path = opt.get('dst_path')
-    src_dataset = opt.get('src_dataset')
-
-    #find COCO json files
-    json_paths = list(src_path.rglob('*.json')) 
-    if not json_paths:
-        raise FileNotFoundError(f"No JSON files found in {src_path}")
-
-    splits = []
-    for json_path in json_paths:
-        key, images, categories, annotations = process_coco(dst_path, src_dataset, json_path, verbose)
-        splits.append({key: {'images': images, 'categories': categories, 'annotations': annotations}})
-
-    coco_dict = {
-        'options': opt,
-        'splits': splits
-    }
-
-    return coco_dict
-
-def from_yolo(opt, verbose=True):
-    pass
 
 def convert_to_yolo(annotation, image_dict, dst_path, split_name, task, verbose):
     
